@@ -1,18 +1,12 @@
 #include <Arduino.h>
+#include "servo-utils.h"
 
-// put function declarations here:
-int myFunction(int, int);
+#define MG996R_PIN 13
+
+servo::mg996r mg996r(MG996R_PIN, 0);
 
 void setup() {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-}
-
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
 }
