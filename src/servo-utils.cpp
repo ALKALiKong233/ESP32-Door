@@ -1,6 +1,8 @@
 #include "servo-utils.h"
 #include <cmath>
 
+servo::mg996r* servo::mg996r::instance = nullptr;
+
 // Constructor implementation
 servo::mg996r::mg996r(int pin, int degree) : SERVO_PIN(pin), curDegree(degree) {
     // Setup LEDC
@@ -8,6 +10,17 @@ servo::mg996r::mg996r(int pin, int degree) : SERVO_PIN(pin), curDegree(degree) {
     ledcAttachPin(SERVO_PIN, MG996R_CHANNEL);
     // Reset to current degree
     rotateTo(degree);
+}
+
+servo::mg996r& servo::mg996r::getInstance(int pin, int degree) {
+    if (instance == nullptr) {
+        // Pin must be declared at the first call
+        if (pin == -1) {
+            pin = 13; // Default pin
+        }
+        instance = new mg996r(pin, degree);
+    }
+    return *instance;
 }
 
 // Calculate duty ratio of the target degree
