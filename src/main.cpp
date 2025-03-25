@@ -4,6 +4,7 @@
 #include "servo-utils.h"
 #include "wifi-utils.h"
 #include "door.h"
+#include "arduino-ha.h"
 
 #define MG996R_PIN 13
 #define BUTTON 2
@@ -31,6 +32,7 @@ void setup() {
   server.on("/open", web_trigger);
   server.begin();
   Serial.println("HTTP server started");
+  HA::setup();
 }
 
 void loop() {
@@ -41,4 +43,5 @@ void loop() {
     door::close();
     shouldOpen = false;
   }
+  HA::loop();
 }
