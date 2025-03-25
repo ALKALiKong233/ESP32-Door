@@ -5,6 +5,7 @@
 #include "wifi-utils.h"
 #include "door.h"
 #include "arduino-ha.h"
+#include "card-utils.h"
 
 #define MG996R_PIN 13
 #define BUTTON 2
@@ -33,6 +34,7 @@ void setup() {
   server.begin();
   Serial.println("HTTP server started");
   HA::setup();
+  cardUtils::setup();
 }
 
 void loop() {
@@ -44,4 +46,5 @@ void loop() {
     shouldOpen = false;
   }
   HA::loop();
+  cardUtils::loop();
 }
