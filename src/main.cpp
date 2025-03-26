@@ -33,8 +33,8 @@ void setup() {
   server.on("/open", web_trigger);
   server.begin();
   Serial.println("HTTP server started");
-  HA::setup();
   cardUtils::setup();
+  HA::setup();
 }
 
 void loop() {

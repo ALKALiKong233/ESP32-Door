@@ -1,12 +1,18 @@
 #include "arduino-ha.h"
 #include "door.h"
+#include "card-utils.h"
+
 #include <Arduino.h>
 #include <WiFi.h>
+#include <SPI.h>
+#include <MFRC522.h>
 
 #define BROKER_ADDR     IPAddress(127,0,0,1)
 #define BROKER_PORT     1883
 #define BROKER_USERNAME "username"
 #define BROKER_PASSWORD "password"
+
+#define SCAN_INTERVAL   5000
 
 byte mac[6];
 WiFiClient client;
@@ -14,6 +20,30 @@ HADevice device(mac, sizeof(mac));
 HAMqtt mqtt(client, device);
 
 HAButton buttonA("DoorOpen");
+HATagScanner scanner("DoorScanner");
+unsigned long lastTagScannedAt = 0;
+
+void scanInHA() {
+    MFRC522 &rfid = cardUtils::getRFID();
+    
+    if (!rfid.PICC_IsNewCardPresent() || !rfid.PICC_ReadCardSerial()) {
+      return;
+    }
+  
+    if (millis() - lastTagScannedAt < SCAN_INTERVAL) {
+      return; // Prevents spamming HA
+    }
+  
+    // Convert tag UID to string
+    char tag[rfid.uid.size*2+1] = {0};
+    HAUtils::byteArrayToStr(tag, rfid.uid.uidByte, rfid.uid.size);
+  
+    Serial.print("Card scanned: ");
+    Serial.println(tag);
+  
+    scanner.tagScanned(tag); // Send to Home Assistant
+    lastTagScannedAt = millis();
+}
 
 void onButtonCommand(HAButton* sender)
 {
@@ -47,6 +77,8 @@ void HA::setup() {
 
     buttonA.onCommand(onButtonCommand);
 
+    scanner.setName("Door RFID Scanner");
+
     connectMqtt();
 }
 
@@ -56,5 +88,6 @@ void HA::loop() {
         Serial.println("MQTT connection lost. Reconnecting...");
         connectMqtt();
     }
+    scanInHA();
     mqtt.loop();
 }

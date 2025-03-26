@@ -1,7 +1,3 @@
-#include <Arduino.h>
-#include <SPI.h>
-#include <MFRC522.h>
-
 #include "card-utils.h"
 
 MFRC522 rfid(SS_PIN, RST_PIN);
@@ -43,4 +39,12 @@ void cardUtils::loop() {
   rfid.PCD_StopCrypto1();
   
   delay(100); // Small delay to prevent multiple reads
+}
+
+MFRC522& cardUtils::getRFID() {
+    return rfid;
+}
+
+MFRC522::MIFARE_Key& cardUtils::getKey() {
+    return key;
 }
