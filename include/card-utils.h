@@ -13,5 +13,7 @@ namespace cardUtils {
     void loop();
     MFRC522& getRFID();
     MFRC522::MIFARE_Key& getKey();
+    bool checkRFIDConnection();
+    void resetRFID();
 }
 #endif // CARD_UTILS_H

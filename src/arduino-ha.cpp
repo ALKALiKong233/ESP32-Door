@@ -13,6 +13,10 @@
 #define BROKER_PASSWORD "password"
 
 #define SCAN_INTERVAL   5000
+#define RFID_CHECK_INTERVAL 30000
+namespace HA {
+    unsigned long lastRFIDCheckTime = 0;
+}
 
 byte mac[6];
 WiFiClient client;
@@ -22,8 +26,29 @@ HAMqtt mqtt(client, device);
 HAButton buttonA("DoorOpen");
 HATagScanner scanner("DoorScanner");
 unsigned long lastTagScannedAt = 0;
+HASensor RFIDStatusReporter("RIFDStatus");
+const char SUCCESS_MSG[] = "OK";
+const char FAILED_MSG[] = "Failed";
 
 void scanInHA() {
+    /* Check RFID connection immediately.
+     * To always keep the RFID working, let's try to check it in every loop.
+     * This consumes a lot of resources, so it will be changed in the future.
+    */
+    if (true) {
+        char msg[10];
+        if (!cardUtils::checkRFIDConnection()) {
+            cardUtils::resetRFID();
+            strcpy(msg, FAILED_MSG);
+        } else {
+            strcpy(msg, SUCCESS_MSG);
+        }
+        if (millis() - HA::lastRFIDCheckTime > RFID_CHECK_INTERVAL) {
+            RFIDStatusReporter.setValue(msg);
+            HA::lastRFIDCheckTime = millis();
+        }
+    }
+
     MFRC522 &rfid = cardUtils::getRFID();
     
     if (millis() - lastTagScannedAt < SCAN_INTERVAL) {
@@ -84,6 +109,8 @@ void HA::setup() {
     buttonA.onCommand(onButtonCommand);
 
     scanner.setName("Door RFID Scanner");
+
+    RFIDStatusReporter.setName("RFID Status Reporter");
 
     connectMqtt();
 }
