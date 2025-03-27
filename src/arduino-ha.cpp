@@ -26,13 +26,14 @@ unsigned long lastTagScannedAt = 0;
 void scanInHA() {
     MFRC522 &rfid = cardUtils::getRFID();
     
+    if (millis() - lastTagScannedAt < SCAN_INTERVAL) {
+        return; // Prevents spamming HA
+    }
+
     if (!rfid.PICC_IsNewCardPresent() || !rfid.PICC_ReadCardSerial()) {
       return;
     }
   
-    if (millis() - lastTagScannedAt < SCAN_INTERVAL) {
-      return; // Prevents spamming HA
-    }
   
     // Convert tag UID to string
     char tag[rfid.uid.size*2+1] = {0};
@@ -43,6 +44,11 @@ void scanInHA() {
   
     scanner.tagScanned(tag); // Send to Home Assistant
     lastTagScannedAt = millis();
+
+    // Halt PICC
+    rfid.PICC_HaltA();
+    // Stop encryption on PCD
+    rfid.PCD_StopCrypto1();
 }
 
 void onButtonCommand(HAButton* sender)
