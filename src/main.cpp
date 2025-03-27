@@ -46,5 +46,5 @@ void loop() {
     shouldOpen = false;
   }
   HA::loop();
-  cardUtils::loop();
+  //cardUtils::loop();
 }
